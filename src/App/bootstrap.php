@@ -5,7 +5,12 @@ include __DIR__ ."/../Framework/App.php";
 require __DIR__ ."/../../vendor/autoload.php";
 
 use Framework\App;
+use App\Config\Paths;
 
-$app = new App();
+use function App\Config\registerRoutes;
+
+$app = new App(Paths::SOURCE . "App/container-definitions.php");
+
+registerRoutes($app);
 
 return $app;
