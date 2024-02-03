@@ -17,12 +17,13 @@ class Router
             'path' => $path,
             'method' => strtoupper($method),
             'controller' => $controller,
+            'middlewares' => []
         ];
     }
 
     private function normalizePath(string $path): string
     {
-        $path = trim($path,'/');
+        $path = trim($path, '/');
         $path = "/{$path}/";
         $path = preg_replace('#[/]{2,}#', '/', $path);
 
@@ -36,7 +37,7 @@ class Router
 
         foreach ($this->routes as $route) {
             if (
-                !preg_match("#^{$route['path']}$#", $path) || 
+                !preg_match("#^{$route['path']}$#", $path) ||
                 $route['method'] !== $method
             ) {
                 continue;
@@ -44,13 +45,15 @@ class Router
 
             [$class, $function] = $route['controller'];
 
-            $controllerInstance = $container ? 
+            $controllerInstance = $container ?
                 $container->resolve($class) :
                 new $class;
 
             $action = fn () => $controllerInstance->{$function}();
 
-            foreach ($this->middlewares as $middleware) {
+            $allMiddleware = [...$route['middlewares'], ...$this->middlewares];
+
+            foreach ($allMiddleware as $middleware) {
                 $middlewareInstance = $container ?
                     $container->resolve($middleware) :
                     new $middleware;
@@ -66,5 +69,11 @@ class Router
     public function addMiddleware(string $middleware)
     {
         $this->middlewares[] = $middleware;
+    }
+
+    public function addRouterMiddleware(string $middleware)
+    {
+        $lastRouteKey = array_key_last($this->routes);
+        $this->routes[$lastRouteKey]['middlewares'][] = $middleware;
     }
 }
