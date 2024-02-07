@@ -57,4 +57,9 @@ class App
     {
         $this->router->addRouterMiddleware($middleware);
     }
+
+    public function setErrorHandler(array $controller)
+    {
+        $this->router->setErrorHandler($controller);
+    }
 }
